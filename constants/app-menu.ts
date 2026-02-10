@@ -14,6 +14,11 @@ export const APP_MENU = [
             label: "Category",
             path: "/category",
           },
+          {
+            id: "Attributes",
+            label: "Attributes",
+            path: "/attribute",
+          },
         ],
       },
     ],
