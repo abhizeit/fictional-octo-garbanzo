@@ -6,6 +6,7 @@ import {
   TCategoryCreate,
   TCategoryStatusUpdate,
   TCategoryUpdate,
+  TCategoryWithParent,
 } from "./category.types";
 
 export const CATEGORIES_ENDPOINTS = {
@@ -19,10 +20,13 @@ export const CATEGORIES_ENDPOINTS = {
 export const categoryService = {
   async getCategories(
     params?: CategoryListParams,
-  ): Promise<ApiResponse<TCategory[]>> {
-    const response = await get<TCategory[]>(CATEGORIES_ENDPOINTS.LIST, {
-      params,
-    });
+  ): Promise<ApiResponse<TCategoryWithParent[]>> {
+    const response = await get<TCategoryWithParent[]>(
+      CATEGORIES_ENDPOINTS.LIST,
+      {
+        params,
+      },
+    );
     return response;
   },
 

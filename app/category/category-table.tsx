@@ -24,7 +24,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { TCategory } from "./category.types";
+import { TCategory, TCategoryWithParent } from "./category.types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +56,7 @@ export function CategoryTable({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const columns: ColumnDef<TCategory>[] = [
+  const columns: ColumnDef<TCategoryWithParent>[] = [
     {
       id: "Name",
       accessorFn: (row) => row.name,
@@ -94,11 +94,11 @@ export function CategoryTable({
     },
     {
       id: "Parent",
-      accessorFn: (row) => row.parent_id,
+      accessorFn: (row) => row.parent?.name,
       header: "Parent",
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
-          {row.original.parent_id || "-"}
+          {row.getValue("Parent")}
         </span>
       ),
     },

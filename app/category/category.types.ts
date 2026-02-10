@@ -23,6 +23,10 @@ export const ZCategory = z.object({
   updated_by: z.string().optional(),
 });
 
+export const ZCategoryWithParent = ZCategory.extend({
+  parent: ZCategory.optional(),
+});
+
 export const ZCategoryUpdate = ZCategory.omit({
   is_deleted: true,
   created_at: true,
@@ -41,6 +45,7 @@ export const ZCategoryCreate = ZCategory.omit({
 });
 
 export type TCategory = z.infer<typeof ZCategory>;
+export type TCategoryWithParent = z.infer<typeof ZCategoryWithParent>;
 export type TCategoryCreate = z.infer<typeof ZCategoryCreate>;
 export type TCategoryUpdate = z.infer<typeof ZCategoryUpdate>;
 export type TCategoryStatusUpdate = Pick<TCategory, "is_active">;
