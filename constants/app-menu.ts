@@ -10,6 +10,11 @@ export const APP_MENU = [
         name: "Product Configuration",
         sub_objects: [
           {
+            id: "Products",
+            label: "Products",
+            path: "/products",
+          },
+          {
             id: "Category",
             label: "Category",
             path: "/category",
