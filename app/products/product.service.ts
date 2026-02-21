@@ -12,9 +12,9 @@ export const PRODUCT_ENDPOINTS = {
   LIST: "/products",
   DETAIL: (id: string) => `/products/${id}`,
   CREATE: "/products",
-  UPDATE: (id: string) => `/products/update/${id}`,
-  DELETE: (id: string) => `/products/${id}`,
-  STATUS: (id: string) => `/products/status/${id}`,
+  UPDATE: (id: string) => `/products/${id}/update`,
+  DELETE: (id: string) => `/products/${id}/delete`,
+  STATUS: (id: string) => `/products/${id}/status`,
 };
 
 export const productService = {
@@ -41,7 +41,10 @@ export const productService = {
     id: string,
     product: ProductUpdateInput,
   ): Promise<Product> => {
-    const response = await put<Product>(PRODUCT_ENDPOINTS.UPDATE(id), product);
+    const response = await patch<Product>(
+      PRODUCT_ENDPOINTS.UPDATE(id),
+      product,
+    );
     return response.data;
   },
 

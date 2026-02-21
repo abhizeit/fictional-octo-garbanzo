@@ -12,8 +12,8 @@ export const ATTRIBUTES_ENDPOINTS = {
   LIST: "/attributes",
   DETAIL: (id: string) => `/attributes/${id}`,
   CREATE: "/attributes",
-  UPDATE: (id: string) => `/attributes/update/${id}`,
-  DELETE: (id: string) => `/attributes/delete/${id}`,
+  UPDATE: (id: string) => `/attributes/${id}/update`,
+  DELETE: (id: string) => `/attributes/${id}/delete`,
 };
 
 export const attributeService = {
@@ -43,7 +43,7 @@ export const attributeService = {
     id: string,
     data: TAttributeUpdate,
   ): Promise<TAttribute> {
-    const response = await put<TAttribute, TAttributeUpdate>(
+    const response = await patch<TAttribute, TAttributeUpdate>(
       ATTRIBUTES_ENDPOINTS.UPDATE(id),
       data,
     );
@@ -54,7 +54,7 @@ export const attributeService = {
     id: string,
     data: TAttributeStatusUpdate,
   ): Promise<TAttribute> {
-    const response = await put<TAttribute, TAttributeStatusUpdate>(
+    const response = await patch<TAttribute, TAttributeStatusUpdate>(
       ATTRIBUTES_ENDPOINTS.UPDATE(id),
       data,
     );

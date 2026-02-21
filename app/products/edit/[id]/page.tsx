@@ -47,16 +47,24 @@ export default function EditProductPage() {
 
   return (
     <div className="flex flex-col h-full w-full p-8 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
-          <p className="text-muted-foreground mt-1">
-            Update the product details
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
+            <p className="text-muted-foreground mt-1">
+              Update the product details
+            </p>
+          </div>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/products/${id}/variants`)}
+        >
+          Manage Variants
+        </Button>
       </div>
 
       {product && (

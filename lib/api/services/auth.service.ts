@@ -28,8 +28,6 @@ export const authService = {
       credentials,
     );
 
-    console.log(response, typeof window);
-
     if (response.status === "success" && typeof window !== "undefined") {
       console.log("Setting auth data");
       const { user, token, refresh_token } = response.data;
@@ -49,6 +47,7 @@ export const authService = {
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
+        location.href = "/login";
       }
     }
   },

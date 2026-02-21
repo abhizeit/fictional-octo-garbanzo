@@ -38,7 +38,7 @@ export function NavigationSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col items-center gap-1 overflow-y-auto scrollbar-none left-0 top-0 z-20 w-(--navbar-width) sticky">
+      <div className="flex flex-col items-center gap-1 overflow-y-auto scrollbar-none left-0 top-0 z-20 w-(--navbar-width) sticky h-screen">
         {applicationMenuData
           ?.sort(
             (a: TModule, b: TModule) => (a?.sequence ?? 0) - (b?.sequence ?? 0),
