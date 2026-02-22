@@ -28,7 +28,7 @@ export const ZVariantCreate = z.object({
     .union([z.string(), z.number()])
     .transform((val) => Number(val))
     .pipe(z.number().positive("Price must be a positive number")),
-  sku: z.string().optional().nullable(),
+  sku: z.string().min(1, "SKU is required"),
   image: z.string().optional().nullable(),
   is_default: z.boolean().default(false),
   is_available: z.boolean().default(true),

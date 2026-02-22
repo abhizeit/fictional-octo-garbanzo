@@ -140,7 +140,9 @@ export function VariantForm({
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="sku">SKU</Label>
+                <Label htmlFor="sku">
+                  SKU <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="sku"
                   placeholder="e.g. PRD-VAR-01"
