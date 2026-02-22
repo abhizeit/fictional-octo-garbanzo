@@ -2,9 +2,9 @@ import { PaginationParams } from "@/lib/api";
 import { z } from "zod";
 
 export enum AttributeType {
-  TEXT = "text",
-  NUMBER = "number",
-  BOOLEAN = "boolean",
+  TEXT = "TEXT",
+  NUMBER = "NUMBER",
+  BOOLEAN = "BOOLEAN",
 }
 
 export const ZAttribute = z.object({

@@ -21,7 +21,16 @@ import {
 import { cn } from "@/lib/utils";
 import { useMenu } from "@/context/menu-context";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  LayoutDashboard,
+  Layers,
+  Package,
+  Settings,
+  Tags,
+  Users,
+  Image as ImageIcon,
+} from "lucide-react";
 import type { TModule } from "@/common/types";
 
 export function NavigationSidebar({ children }: { children: React.ReactNode }) {
@@ -35,6 +44,49 @@ export function NavigationSidebar({ children }: { children: React.ReactNode }) {
   } = useMenu();
 
   const { toggleSidebar, state } = useSidebar();
+
+  const navItems = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Categories",
+      href: "/categories",
+      icon: Layers,
+    },
+    {
+      title: "Products",
+      href: "/products",
+      icon: Package,
+    },
+    {
+      title: "Tags",
+      href: "/tags",
+      icon: Tags,
+    },
+    {
+      title: "Users",
+      href: "/users",
+      icon: Users,
+    },
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+    {
+      title: "Banners",
+      href: "/banners",
+      icon: ImageIcon,
+    },
+    {
+      title: "Attributes",
+      href: "/attributes",
+      icon: Layers, // Assuming Layers icon for Attributes, adjust if needed
+    },
+  ];
 
   return (
     <div className="flex flex-row w-full h-full">
