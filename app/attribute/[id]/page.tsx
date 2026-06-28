@@ -18,14 +18,18 @@ import { useAttributeValues } from "../hooks/use-attribute-values";
 import { AttributeValueTable } from "../components/attribute-value-table";
 import { AttributeValueForm } from "../components/attribute-value-form";
 import { TAttributeValue } from "../attribute-value.types";
+import type { NextSearchParamsRecord } from "@/lib/next-search-params";
 
 export default function AttributeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<NextSearchParamsRecord>;
 }) {
   const router = useRouter();
   const { id } = use(params);
+  use(searchParams);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingValue, setEditingValue] = useState<TAttributeValue | null>(

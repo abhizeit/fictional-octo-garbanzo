@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { LoginForm } from "@/app/login/login-form";
 import {
   Card,
@@ -9,12 +10,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/context/auth-context";
+import type { NextSearchParamsRecord } from "@/lib/next-search-params";
+import { ThemeToggleSwitch } from "@/components/custom/theme-toggle-switch";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<NextSearchParamsRecord>;
+}) {
+  use(searchParams);
   const { otpSent } = useAuth();
 
   return (
-    <div className="min-h-screen flex items-center justify-center max-w-5xl w-full mx-auto">
+    <div className="min-h-screen flex items-center justify-center max-w-5xl w-full mx-auto relative bg-background">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggleSwitch />
+      </div>
       <Card className="login-card w-full relative z-10 backdrop-blur-xl bg-card/80 border-border/50 shadow-2xl animate-fade-in-up">
         <CardHeader className="space-y-3 pb-6">
           <div className="mx-auto mb-2">

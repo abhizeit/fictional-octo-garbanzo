@@ -22,7 +22,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Eye,
+  Layers,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Product } from "@/app/products/product.types";
@@ -32,6 +32,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+function variantCount(product: Product): number {
+  if (product._count?.variants != null) return product._count.variants;
+  return product.variants?.length ?? 0;
+}
 
 interface ProductTableProps {
   data: Product[];
@@ -93,6 +98,11 @@ export function ProductTable({
             <div className="text-xs text-muted-foreground font-mono">
               {product.code}
             </div>
+            {product.slug ? (
+              <div className="text-xs text-muted-foreground font-mono">
+                /{product.slug}
+              </div>
+            ) : null}
           </div>
         );
       },
@@ -127,8 +137,7 @@ export function ProductTable({
         const product = row.original;
         return (
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-            <span>Variants: {product._count?.variants ?? 0}</span>
-            <span>Addons: {product._count?.addons ?? 0}</span>
+            <span>Variants: {variantCount(product)}</span>
           </div>
         );
       },
@@ -183,6 +192,16 @@ export function ProductTable({
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `/products/${product.id}/variants?${searchParams.toString()}`,
+                    )
+                  }
+                >
+                  <Layers className="mr-2 h-4 w-4" />
+                  Variants
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"

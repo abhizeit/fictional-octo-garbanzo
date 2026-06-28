@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import {
-  useProducts,
-  useDeleteProduct,
-  useToggleProductStatus,
-} from "@/lib/hooks/use-products";
+  useCustomers,
+  useDeleteCustomer,
+  useToggleCustomerStatus,
+} from "@/lib/hooks/use-customers";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,14 +28,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ProductTable } from "./components/product-table";
+import { CustomerTable } from "./customer-table";
 
-export function ProductsClient() {
+export default function Customers() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // Get initial state from URL params
   const page = Number(searchParams.get("page")) || 1;
   const pageSize = Number(searchParams.get("limit")) || 10;
   const initialSearchQuery = searchParams.get("search") || "";
@@ -59,7 +58,6 @@ export function ProductsClient() {
     return newSearchParams.toString();
   };
 
-  // Sync state with URL params
   const [prevInitialSearch, setPrevInitialSearch] =
     useState(initialSearchQuery);
   if (initialSearchQuery !== prevInitialSearch) {
@@ -67,7 +65,6 @@ export function ProductsClient() {
     setPrevInitialSearch(initialSearchQuery);
   }
 
-  // Update URL when debounced search changes
   useEffect(() => {
     if (debouncedSearch !== initialSearchQuery) {
       router.push(
@@ -84,89 +81,73 @@ export function ProductsClient() {
     setSearchTerm(event.target.value);
   };
 
-  const [deletingProductId, setDeletingProductId] = useState<string | null>(
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(
     null,
   );
 
   const {
-    data: products,
+    data: customers,
     isLoading,
     error,
-  } = useProducts({
+  } = useCustomers({
     search: debouncedSearch || undefined,
     page,
     limit: pageSize,
   });
 
-  // Mutations
-  const deleteProduct = useDeleteProduct();
-  const toggleStatus = useToggleProductStatus();
+  const deleteCustomer = useDeleteCustomer();
+  const toggleStatus = useToggleCustomerStatus();
 
-  // Handlers
   const handleDelete = async () => {
-    if (deletingProductId) {
-      await deleteProduct.mutateAsync(deletingProductId);
-      setDeletingProductId(null);
+    if (deletingCustomerId) {
+      await deleteCustomer.mutateAsync(deletingCustomerId);
+      setDeletingCustomerId(null);
     }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
-    await toggleStatus.mutateAsync({ id, isActive: !currentStatus });
+    await toggleStatus.mutateAsync({ id, is_active: !currentStatus });
   };
 
-  const productList = products?.data ?? [];
-  const meta = products?.meta;
-  const total = meta?.total ?? 0;
-  const totalPages = meta?.total_pages ?? 1;
+  const customerList = customers?.data ?? [];
+  const meta = customers?.meta;
+  const total = meta?.total ?? customerList.length;
+  const totalPages = meta?.total_pages ?? Math.ceil(total / pageSize);
 
   return (
     <div className="flex flex-col h-full w-full p-8 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your food products
+            View and manage registered customers
           </p>
         </div>
-        <Button
-          onClick={() =>
-            router.push(`/products/create?${searchParams.toString()}`)
-          }
-          size="lg"
-        >
-          <Plus className="mr-2 h-5 w-5" />
-          Add Product
-        </Button>
       </div>
 
-      {/* Search & Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Search & Filters</CardTitle>
-          <CardDescription>Find and filter products</CardDescription>
+          <CardTitle>Search</CardTitle>
+          <CardDescription>Find customers by name, phone, or code</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products by name or code..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="pl-9"
-              />
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-9"
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Products Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Products</CardTitle>
+          <CardTitle>All Customers</CardTitle>
           <CardDescription>
-            {total} {total === 1 ? "product" : "products"} total
+            {total} {total === 1 ? "customer" : "customers"} total
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -176,49 +157,40 @@ export function ProductsClient() {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-destructive">Failed to load products</p>
+              <p className="text-destructive">Failed to load customers</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {(error as any)?.response?.data?.message || "An error occurred"}
+                {(error as any)?.error?.message || "An error occurred"}
               </p>
             </div>
-          ) : productList.length === 0 ? (
+          ) : customerList.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No products found</p>
-              <Button
-                onClick={() => router.push("/products/create")}
-                variant="outline"
-                className="mt-4"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create your first product
-              </Button>
+              <p className="text-muted-foreground">No customers found</p>
             </div>
           ) : (
-            <ProductTable
-              data={productList}
+            <CustomerTable
+              data={customerList}
               page={page}
               pageSize={pageSize}
               total={total}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              onDelete={(id) => setDeletingProductId(id)}
+              onDelete={(id: string) => setDeletingCustomerId(id)}
               onToggleStatus={handleToggleStatus}
             />
           )}
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation */}
       <AlertDialog
-        open={!!deletingProductId}
-        onOpenChange={(open) => !open && setDeletingProductId(null)}
+        open={!!deletingCustomerId}
+        onOpenChange={(open) => !open && setDeletingCustomerId(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              product and remove it from our servers.
+              This will soft-delete the customer account. They will no longer
+              appear in the customer list.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

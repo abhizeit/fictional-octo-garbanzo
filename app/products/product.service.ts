@@ -1,5 +1,4 @@
-import { get, post, put, patch, del } from "../../lib/api/client";
-import { ApiResponse } from "../../lib/api/types";
+import { get, post, put, patch } from "../../lib/api/client";
 import {
   Product,
   ProductCreateInput,
@@ -21,10 +20,21 @@ export const productService = {
   getProducts: async (
     params?: ProductListParams,
   ): Promise<ProductListResponse> => {
-    const response = await get<ProductListResponse>(PRODUCT_ENDPOINTS.LIST, {
-      params,
-    });
-    return response.data;
+    const response = await get<Product[]>(PRODUCT_ENDPOINTS.LIST, { params });
+    const page = response.meta?.page ?? params?.page ?? 1;
+    const limit = response.meta?.limit ?? params?.limit ?? 10;
+    const total = response.meta?.total ?? 0;
+    return {
+      data: response.data ?? [],
+      meta: {
+        total,
+        page,
+        limit,
+        total_pages:
+          response.meta?.total_pages ??
+          (limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1),
+      },
+    };
   },
 
   getProduct: async (id: string): Promise<Product> => {
@@ -56,7 +66,7 @@ export const productService = {
   },
 
   deleteProduct: async (id: string): Promise<void> => {
-    await del(PRODUCT_ENDPOINTS.DELETE(id));
+    await patch(PRODUCT_ENDPOINTS.DELETE(id));
   },
 
   toggleProductStatus: async (

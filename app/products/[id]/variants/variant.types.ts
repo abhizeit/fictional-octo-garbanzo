@@ -3,6 +3,7 @@ import { z } from "zod";
 export type TVariant = {
   id: string;
   name: string;
+  slug?: string;
   price: string | number;
   sku: string | null;
   image: string | null;
@@ -12,6 +13,18 @@ export type TVariant = {
   product_id: string;
   created_at: string;
   updated_at: string;
+  variant_attribute_values?: {
+    id: string;
+    attribute_value_id: string;
+    attribute_value?: {
+      id: string;
+      value: string;
+      attribute_id: string;
+      attribute?: {
+        name: string;
+      };
+    };
+  }[];
 };
 
 export type VariantListParams = {
@@ -22,8 +35,18 @@ export type VariantListParams = {
   product_id?: string;
 };
 
+const variantSlugField = z
+  .string()
+  .min(2, "Slug must be at least 2 characters")
+  .max(100)
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    "Use lowercase letters, numbers, and single hyphens (e.g. 6-pieces)",
+  );
+
 export const ZVariantCreate = z.object({
   name: z.string().min(1, "Name is required"),
+  slug: variantSlugField,
   price: z
     .union([z.string(), z.number()])
     .transform((val) => Number(val))
@@ -34,6 +57,7 @@ export const ZVariantCreate = z.object({
   is_available: z.boolean().default(true),
   is_active: z.boolean().default(true),
   product_id: z.string().uuid("Invalid product ID"),
+  attribute_value_ids: z.array(z.string()).optional(),
 });
 
 export type TVariantCreate = z.infer<typeof ZVariantCreate>;

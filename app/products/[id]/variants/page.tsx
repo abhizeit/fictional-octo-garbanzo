@@ -16,22 +16,22 @@ import { useProduct } from "@/lib/hooks/use-products";
 import { useVariants } from "./hooks/use-variants";
 import { VariantTable } from "./components/variant-table";
 import { VariantForm } from "./components/variant-form";
-import { VariantAttributesDialog } from "./components/variant-attributes-dialog";
-import { TVariant, TVariantCreate } from "./variant.types";
+import { TVariant, TVariantCreate, TVariantUpdate } from "./variant.types";
+import type { NextSearchParamsRecord } from "@/lib/next-search-params";
 
 export default function VariantsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<NextSearchParamsRecord>;
 }) {
   const router = useRouter();
   const { id } = use(params);
+  use(searchParams); // unwrap page prop; avoids Next.js sync dynamic APIs warning
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<TVariant | null>(null);
-  const [isAttributesDialogOpen, setIsAttributesDialogOpen] = useState(false);
-  const [selectedVariantForAttributes, setSelectedVariantForAttributes] =
-    useState<TVariant | null>(null);
 
   // Fetch Product Details to show the name
   const {
@@ -48,7 +48,9 @@ export default function VariantsPage({
     updateMutation,
     deleteMutation,
     toggleStatusMutation,
+    bulkUpdateMutation,
   } = useVariants({ product_id: id });
+  const variantsList = variantsData ?? [];
 
   const handleCreate = () => {
     setEditingVariant(null);
@@ -58,11 +60,6 @@ export default function VariantsPage({
   const handleEdit = (variant: TVariant) => {
     setEditingVariant(variant);
     setIsFormOpen(true);
-  };
-
-  const handleManageAttributes = (variant: TVariant) => {
-    setSelectedVariantForAttributes(variant);
-    setIsAttributesDialogOpen(true);
   };
 
   const handleFormSubmit = async (data: TVariantCreate) => {
@@ -78,6 +75,24 @@ export default function VariantsPage({
       });
     }
     setIsFormOpen(false);
+  };
+
+  const handleVariantQuickUpdate = async (
+    variantId: string,
+    patch: TVariantUpdate,
+  ) => {
+    await updateMutation.mutateAsync({
+      id: variantId,
+      data: patch,
+    });
+  };
+
+  const handleBulkUpdate = async (patch: TVariantUpdate) => {
+    if (variantsList.length === 0) return;
+    await bulkUpdateMutation.mutateAsync({
+      ids: variantsList.map((variant) => variant.id),
+      data: patch,
+    });
   };
 
   if (isProductLoading) {
@@ -96,10 +111,6 @@ export default function VariantsPage({
       </div>
     );
   }
-
-  const variantsList = Array.isArray(variantsData)
-    ? variantsData
-    : (variantsData as any)?.data || [];
 
   return (
     <div className="flex flex-col h-full w-full p-8 space-y-6">
@@ -152,7 +163,6 @@ export default function VariantsPage({
             <VariantTable
               data={variantsList}
               onEdit={handleEdit}
-              onManageAttributes={handleManageAttributes}
               onDelete={(variantId) => deleteMutation.mutate(variantId)}
               onToggleStatus={(variantId, status) =>
                 toggleStatusMutation.mutate({
@@ -175,15 +185,6 @@ export default function VariantsPage({
         initialData={editingVariant}
         productId={id}
         isLoading={createMutation.isPending || updateMutation.isPending}
-      />
-
-      <VariantAttributesDialog
-        variant={selectedVariantForAttributes}
-        open={isAttributesDialogOpen}
-        onOpenChange={(open) => {
-          setIsAttributesDialogOpen(open);
-          if (!open) setSelectedVariantForAttributes(null);
-        }}
       />
     </div>
   );

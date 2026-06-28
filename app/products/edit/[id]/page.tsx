@@ -1,20 +1,31 @@
 "use client";
 
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { use } from "react";
+import { useRouter } from "next/navigation";
 import { useProduct } from "@/lib/hooks/use-products";
 import { ProductForm } from "@/app/products/components/product-form";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import {
+  searchParamsRecordToString,
+  type NextSearchParamsRecord,
+} from "@/lib/next-search-params";
 
-export default function EditProductPage() {
+export default function EditProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<NextSearchParamsRecord>;
+}) {
   const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const id = params.id as string;
+  const { id } = use(params);
+  const sp = use(searchParams);
   const { data: product, isLoading, error } = useProduct(id);
 
   const handleSuccess = () => {
-    router.push(`/products?${searchParams.toString()}`);
+    const qs = searchParamsRecordToString(sp);
+    router.push(qs ? `/products?${qs}` : "/products");
   };
 
   const handleCancel = () => {

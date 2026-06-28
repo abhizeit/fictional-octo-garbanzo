@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useMenu } from "@/context/menu-context";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { DynamicIcon } from "lucide-react/dynamic";
 import {
   ChevronLeft,
   LayoutDashboard,
@@ -32,6 +32,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import type { TModule } from "@/common/types";
+import { ThemeToggleSwitch } from "@/components/custom/theme-toggle-switch";
 
 export function NavigationSidebar({ children }: { children: React.ReactNode }) {
   const {
@@ -90,7 +91,8 @@ export function NavigationSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col items-center gap-1 overflow-y-auto scrollbar-none left-0 top-0 z-20 w-(--navbar-width) sticky h-screen">
+      <div className="flex flex-col left-0 top-0 z-20 w-(--navbar-width) sticky h-screen shrink-0 border-r border-border/50 bg-sidebar">
+        <div className="flex flex-1 flex-col items-center gap-1 overflow-y-auto scrollbar-none px-1 py-1 min-h-0">
         {applicationMenuData
           ?.sort(
             (a: TModule, b: TModule) => (a?.sequence ?? 0) - (b?.sequence ?? 0),
@@ -110,7 +112,7 @@ export function NavigationSidebar({ children }: { children: React.ReactNode }) {
                         : "text-sidebar-foreground/70",
                     )}
                   >
-                    <DynamicIcon name="file" className="h-5 w-5" />
+                    <DynamicIcon name="box" className="h-5 w-5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>
@@ -119,6 +121,10 @@ export function NavigationSidebar({ children }: { children: React.ReactNode }) {
               </Tooltip>
             );
           })}
+        </div>
+        <div className="flex shrink-0 flex-col items-center border-t border-sidebar-border py-3 px-1">
+          <ThemeToggleSwitch />
+        </div>
       </div>
 
       <div className="">

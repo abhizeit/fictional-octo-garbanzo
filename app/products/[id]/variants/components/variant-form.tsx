@@ -16,6 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CloudinaryUpload } from "@/components/custom/cloudinary-upload";
+import { attributeValueService } from "@/app/attribute/attribute-value.service";
+import { productService } from "@/app/products/product.service";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { TVariant, TVariantCreate, ZVariantCreate } from "../variant.types";
 
@@ -26,6 +38,54 @@ interface VariantFormProps {
   initialData?: TVariant | null;
   isLoading?: boolean;
   productId: string;
+}
+
+function AttributeSelect({
+  attribute,
+  value,
+  onChange,
+  disabled,
+}: {
+  attribute: { id: string; name: string };
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const { data: attributeValuesResponse, isLoading } = useQuery({
+    queryKey: ["attribute-values", attribute.id],
+    queryFn: () =>
+      attributeValueService.getAttributeValues({
+        attribute_id: attribute.id,
+      }),
+  });
+
+  const attributeValues = Array.isArray(attributeValuesResponse)
+    ? attributeValuesResponse
+    : attributeValuesResponse?.data || [];
+
+  return (
+    <div className="grid gap-2">
+      <Label>
+        {attribute.name} <span className="text-destructive">*</span>
+      </Label>
+      <Select
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled || isLoading}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder={`Select ${attribute.name}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {attributeValues.map((val) => (
+            <SelectItem key={val.id} value={val.id}>
+              {val.value}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
 export function VariantForm({
@@ -49,6 +109,7 @@ export function VariantForm({
     resolver: zodResolver(ZVariantCreate),
     defaultValues: {
       name: "",
+      slug: "",
       price: 0,
       sku: "",
       image: "",
@@ -59,11 +120,25 @@ export function VariantForm({
     },
   });
 
+  const { data: productResponse, isLoading: productLoading } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => productService.getProduct(productId),
+    enabled: open,
+  });
+
+  const productAttributes =
+    productResponse?.product_attributes?.map((pa) => pa.attribute) || [];
+
+  const [attributeSelections, setAttributeSelections] = useState<
+    Record<string, string>
+  >({});
+
   useEffect(() => {
     if (open) {
       if (initialData) {
         reset({
           name: initialData.name,
+          slug: initialData.slug ?? "",
           price: Number(initialData.price),
           sku: initialData.sku || "",
           image: initialData.image || "",
@@ -72,9 +147,21 @@ export function VariantForm({
           is_available: initialData.is_available,
           product_id: productId,
         });
+
+        const initialSelections: Record<string, string> = {};
+        if (initialData.variant_attribute_values) {
+          for (const vav of initialData.variant_attribute_values) {
+            if (vav.attribute_value?.attribute_id) {
+              initialSelections[vav.attribute_value.attribute_id] =
+                vav.attribute_value_id;
+            }
+          }
+        }
+        setAttributeSelections(initialSelections);
       } else {
         reset({
           name: "",
+          slug: "",
           price: 0,
           sku: "",
           image: "",
@@ -83,6 +170,7 @@ export function VariantForm({
           is_active: true,
           product_id: productId,
         });
+        setAttributeSelections({});
       }
     }
   }, [open, initialData, reset, productId]);
@@ -91,7 +179,26 @@ export function VariantForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <form
-          onSubmit={handleSubmit((data) => onSubmit(data as TVariantCreate))}
+          onSubmit={handleSubmit((data) => {
+            if (productAttributes.length > 0) {
+              // Ensure all attributes have a selected value
+              const allSelected = productAttributes.every(
+                (attr) => !!attributeSelections[attr.id]
+              );
+              if (!allSelected) {
+                toast.error(
+                  "Please select a value for each product attribute before saving.",
+                );
+                return;
+              }
+            }
+            
+            const finalData = {
+              ...data,
+              attribute_value_ids: Object.values(attributeSelections),
+            };
+            onSubmit(finalData as TVariantCreate);
+          })}
         >
           <DialogHeader>
             <DialogTitle>
@@ -117,6 +224,22 @@ export function VariantForm({
               {errors.name && (
                 <p className="text-sm text-destructive">
                   {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="slug">
+                Slug <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="slug"
+                placeholder="e.g. 6-pieces, large-hot"
+                {...register("slug")}
+              />
+              {errors.slug && (
+                <p className="text-sm text-destructive">
+                  {errors.slug.message}
                 </p>
               )}
             </div>
@@ -194,6 +317,29 @@ export function VariantForm({
                 <Label htmlFor="is_available">Available for Sale</Label>
               </div>
             </div>
+
+            {productAttributes.length > 0 && (
+              <>
+                <div className="my-2 border-t" />
+                <h4 className="text-sm font-medium mb-2">Attributes</h4>
+                <div className="grid gap-4">
+                  {productAttributes.map((attr) => (
+                    <AttributeSelect
+                      key={attr.id}
+                      attribute={attr}
+                      value={attributeSelections[attr.id] || ""}
+                      onChange={(val) =>
+                        setAttributeSelections((prev) => ({
+                          ...prev,
+                          [attr.id]: val,
+                        }))
+                      }
+                      disabled={isLoading}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <DialogFooter>

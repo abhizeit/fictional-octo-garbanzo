@@ -1,13 +1,21 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateBanner } from "@/lib/hooks/use-banners";
 import { BannerForm } from "../banner-form";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function CreateBannerPage() {
+import type { NextSearchParamsRecord } from "@/lib/next-search-params";
+
+export default function CreateBannerPage({
+  searchParams,
+}: {
+  searchParams: Promise<NextSearchParamsRecord>;
+}) {
   const router = useRouter();
+  use(searchParams);
   const createBanner = useCreateBanner();
 
   const handleSubmit = async (data: any) => {

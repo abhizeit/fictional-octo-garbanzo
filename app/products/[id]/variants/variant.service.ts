@@ -1,5 +1,4 @@
 import { get, post, put, patch, del } from "@/lib/api/client";
-import type { ApiResponse } from "@/lib/api/types";
 import {
   TVariant,
   TVariantCreate,
@@ -21,11 +20,11 @@ export const variantService = {
   getVariants: async (
     productId: string,
     params?: VariantListParams,
-  ): Promise<ApiResponse<TVariant[]>> => {
+  ): Promise<TVariant[]> => {
     const response = await get<TVariant[]>(VARIANT_ENDPOINTS.LIST, {
-      params: { ...params, product_id: productId },
+      params: { limit: 500, ...params, product_id: productId },
     });
-    return response;
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   getVariant: async (id: string): Promise<TVariant> => {

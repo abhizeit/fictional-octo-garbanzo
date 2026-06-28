@@ -1,15 +1,19 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
+import { use } from "react";
+import { useRouter } from "next/navigation";
 import { useBanner, useUpdateBanner } from "@/lib/hooks/use-banners";
 import { BannerForm } from "../../banner-form";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function EditBannerPage() {
+export default function EditBannerPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+  const { id } = use(params);
 
   const { data: banner, isLoading, error } = useBanner(id);
   const updateBanner = useUpdateBanner();

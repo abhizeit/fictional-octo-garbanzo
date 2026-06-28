@@ -31,6 +31,17 @@ export const APP_MENU = [
           },
         ],
       },
+      {
+        label: "Customer Management",
+        name: "Customer Management",
+        sub_objects: [
+          {
+            id: "Customers",
+            label: "Customers",
+            path: "/customers",
+          },
+        ],
+      },
     ],
   },
 ];

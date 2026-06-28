@@ -30,7 +30,7 @@ export function useVariants({
   const variantsQuery = useQuery({
     queryKey: variantKeys.list(product_id, params),
     queryFn: () => variantService.getVariants(product_id, params),
-    enabled: !!product_id, // Important: Don't execute without a product ID
+    enabled: !!product_id,
   });
 
   // Mutations
@@ -97,6 +97,27 @@ export function useVariants({
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({
+      ids,
+      data,
+    }: {
+      ids: string[];
+      data: TVariantUpdate;
+    }) => {
+      await Promise.all(ids.map((id) => variantService.updateVariant(id, data)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: variantKeys.lists(product_id),
+      });
+      toast.success("Variants updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Failed to update variants");
+    },
+  });
+
   return {
     variantsData: variantsQuery.data,
     isLoading: variantsQuery.isLoading,
@@ -105,5 +126,6 @@ export function useVariants({
     updateMutation,
     toggleStatusMutation,
     deleteMutation,
+    bulkUpdateMutation,
   };
 }

@@ -20,6 +20,8 @@ import { CloudinaryUpload } from "@/components/custom/cloudinary-upload";
 import { PaginatedAsyncMultiSelect } from "@/components/custom/paginated-async-multi-select";
 import { categoryService } from "@/app/category/category.service";
 import { TCategory } from "@/app/category/category.types";
+import { attributeService } from "@/app/attribute/attribute.service";
+import { TAttribute } from "@/app/attribute/attribute.types";
 import {
   Product,
   TProductCreate,
@@ -50,12 +52,14 @@ export function ProductForm({
     resolver: zodResolver(ZProductCreate),
     defaultValues: {
       name: "",
+      slug: "",
       code: "",
       description: "",
       image: "",
       is_available: true,
       is_active: true,
       category_ids: [],
+      attribute_ids: [],
     },
   });
 
@@ -63,12 +67,15 @@ export function ProductForm({
     if (initialData) {
       reset({
         name: initialData.name,
+        slug: initialData.slug ?? "",
         code: initialData.code,
         description: initialData.description || "",
         image: initialData.image || "",
         is_available: initialData.is_available ?? true,
         is_active: initialData.is_active ?? true,
         category_ids: initialData.categories?.map((c) => c.category.id) || [],
+        attribute_ids:
+          initialData.product_attributes?.map((pa) => pa.attribute.id) || [],
       });
     }
   }, [initialData, reset]);
@@ -93,11 +100,17 @@ export function ProductForm({
     }
   };
 
-  // Helper to fetch multiple categories for preloading
   const fetchCategoriesByIds = async (ids: (string | number)[]) => {
     // In a real app, you'd want a specific API endpoint for this.
     // Here we simulate by fetching individual items in parallel.
     const promises = ids.map((id) => categoryService.getCategory(String(id)));
+    const results = await Promise.all(promises);
+    return results;
+  };
+
+  // Helper to fetch multiple attributes for preloading
+  const fetchAttributesByIds = async (ids: (string | number)[]) => {
+    const promises = ids.map((id) => attributeService.getAttribute(String(id)));
     const results = await Promise.all(promises);
     return results;
   };
@@ -152,6 +165,27 @@ export function ProductForm({
                 </p>
               )}
             </div>
+
+            {/* Slug Field */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="slug">
+                Slug <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="slug"
+                {...register("slug")}
+                placeholder="zinger-burger"
+                aria-invalid={!!errors.slug}
+              />
+              <p className="text-xs text-muted-foreground">
+                URL-safe identifier (lowercase, hyphens). Used for links and APIs.
+              </p>
+              {errors.slug && (
+                <p className="text-sm text-destructive">
+                  {errors.slug.message}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Description Field */}
@@ -197,6 +231,25 @@ export function ProductForm({
             {errors.category_ids && (
               <p className="text-sm text-destructive">
                 {errors.category_ids.message}
+              </p>
+            )}
+          </div>
+
+          {/* Attributes Multi-Select */}
+          <div className="space-y-2">
+            <PaginatedAsyncMultiSelect<TAttribute>
+              value={watch("attribute_ids") || []}
+              onChange={(value) => setValue("attribute_ids", value.map(String))}
+              fetcher={(params) => attributeService.getAttributes(params).then((res) => res)}
+              preloadFetcher={fetchAttributesByIds}
+              getOptionLabel={(attribute) => attribute.name}
+              getOptionValue={(attribute) => attribute.id}
+              label="Attributes"
+              placeholder="Select attributes..."
+            />
+            {errors.attribute_ids && (
+              <p className="text-sm text-destructive">
+                {errors.attribute_ids.message}
               </p>
             )}
           </div>
@@ -248,7 +301,7 @@ export function ProductForm({
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between gap-4">
+        <CardFooter className="mt-6 flex justify-between gap-4">
           {onCancel && (
             <Button
               type="button"

@@ -1,20 +1,31 @@
 "use client";
 
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { use } from "react";
+import { useRouter } from "next/navigation";
 import { useCategory } from "@/lib/hooks/use-categories";
 import { CategoryForm } from "@/app/category/category-form";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import {
+  searchParamsRecordToString,
+  type NextSearchParamsRecord,
+} from "@/lib/next-search-params";
 
-export default function EditCategoryPage() {
+export default function EditCategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<NextSearchParamsRecord>;
+}) {
   const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const slug = params.slug as string;
+  const { slug } = use(params);
+  const sp = use(searchParams);
   const { data: category, isLoading, error } = useCategory(slug);
 
   const handleSuccess = () => {
-    router.push(`/category?${searchParams.toString()}`);
+    const qs = searchParamsRecordToString(sp);
+    router.push(qs ? `/category?${qs}` : "/category");
   };
 
   const handleCancel = () => {

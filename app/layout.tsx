@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryProvider } from "@/providers/query-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Nunito({
@@ -26,22 +27,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable}  antialiased`}>
-        <QueryProvider>
-          <MenuContextProvider>
-            <TooltipProvider>
-              <AuthProvider>
-                <SidebarProvider>
-                  <LayoutWrapper>
-                    {children}
-                    <Toaster richColors invert/>
-                  </LayoutWrapper>
-                </SidebarProvider>
-              </AuthProvider>
-            </TooltipProvider>
-          </MenuContextProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <MenuContextProvider>
+              <TooltipProvider>
+                <AuthProvider>
+                  <SidebarProvider>
+                    <LayoutWrapper>
+                      {children}
+                      <Toaster richColors invert />
+                    </LayoutWrapper>
+                  </SidebarProvider>
+                </AuthProvider>
+              </TooltipProvider>
+            </MenuContextProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

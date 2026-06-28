@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { use, useState, useEffect, useMemo } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Plus, Search, Loader2 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
@@ -29,17 +29,25 @@ import { AttributeForm } from "./attribute-form";
 import { attributeService } from "./attribute.service";
 import { TAttribute } from "./attribute.types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getSearchParam,
+  mergeSearchParamsString,
+  type NextSearchParamsRecord,
+} from "@/lib/next-search-params";
 
-export default function AttributePage() {
+export default function AttributePage({
+  searchParams: searchParamsPromise,
+}: {
+  searchParams: Promise<NextSearchParamsRecord>;
+}) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const sp = use(searchParamsPromise);
   const pathname = usePathname();
   const queryClient = useQueryClient();
 
-  // Get initial state from URL params
-  const page = Number(searchParams.get("page")) || 1;
-  const pageSize = Number(searchParams.get("limit")) || 10;
-  const initialSearchQuery = searchParams.get("search") || "";
+  const page = Number(getSearchParam(sp, "page")) || 1;
+  const pageSize = Number(getSearchParam(sp, "limit")) || 10;
+  const initialSearchQuery = getSearchParam(sp, "search") || "";
 
   const [searchTerm, setSearchTerm] = useState(initialSearchQuery);
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -52,21 +60,11 @@ export default function AttributePage() {
     null,
   );
 
-  const createQueryString = (
-    params: Record<string, string | number | null>,
-  ) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === null) {
-        newSearchParams.delete(key);
-      } else {
-        newSearchParams.set(key, String(value));
-      }
-    });
-
-    return newSearchParams.toString();
-  };
+  const createQueryString = useMemo(
+    () => (updates: Record<string, string | number | null>) =>
+      mergeSearchParamsString(sp, updates),
+    [sp],
+  );
 
   // Sync state with URL params
   useEffect(() => {
@@ -82,7 +80,13 @@ export default function AttributePage() {
         `${pathname}?${createQueryString({ search: debouncedSearch, page: 1 })}`,
       );
     }
-  }, [debouncedSearch, router, pathname]);
+  }, [
+    debouncedSearch,
+    initialSearchQuery,
+    router,
+    pathname,
+    createQueryString,
+  ]);
 
   const handlePageChange = (newPage: number) => {
     router.push(`${pathname}?${createQueryString({ page: newPage })}`);
