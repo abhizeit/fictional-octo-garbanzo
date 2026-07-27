@@ -40,6 +40,11 @@ export const APP_MENU = [
             label: "Customers",
             path: "/customers",
           },
+          {
+            id: "Orders",
+            label: "Orders",
+            path: "/orders",
+          },
         ],
       },
     ],

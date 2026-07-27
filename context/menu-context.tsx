@@ -127,6 +127,46 @@ function findSubMenuByPathSegments(
 }
 
 /**
+ * Finds a submenu item whose path is a prefix of the current path.
+ * Example: /orders/abc-uuid matches menu path /orders
+ */
+function findSubMenuByPathPrefix(
+  menuList: TModule[],
+  currentPath: string,
+): { menu: TModule; group: TObject; item: TSubObject } | null {
+  let best: { menu: TModule; group: TObject; item: TSubObject } | null = null;
+  let bestLength = 0;
+
+  for (const menu of menuList) {
+    const objects = menu.objects;
+    if (!objects) continue;
+
+    for (const group of objects) {
+      const subObjects = group.sub_objects;
+      if (!subObjects) continue;
+
+      for (const item of subObjects) {
+        const itemPath = item.path;
+        if (!itemPath) continue;
+
+        const isPrefix =
+          currentPath === itemPath ||
+          currentPath.startsWith(
+            itemPath.endsWith("/") ? itemPath : `${itemPath}/`,
+          );
+
+        if (isPrefix && itemPath.length > bestLength) {
+          best = { menu, group, item };
+          bestLength = itemPath.length;
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
+/**
  * Finds a submenu item by ID
  */
 function findSubMenuById(
@@ -255,6 +295,11 @@ export function MenuContextProvider({ children }: MenuContextProviderProps) {
     // If no exact match, try dynamic route matching
     if (!result) {
       result = findSubMenuByPathSegments(applicationMenuData, pathname);
+    }
+
+    // Fall back to longest path prefix (e.g. /orders/:id → /orders)
+    if (!result) {
+      result = findSubMenuByPathPrefix(applicationMenuData, pathname);
     }
 
     if (result) {

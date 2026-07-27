@@ -208,7 +208,11 @@ export default function CustomerDetailPage({
                 </TableHeader>
                 <TableBody>
                   {customer.orders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow
+                      key={order.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/orders/${order.id}`)}
+                    >
                       <TableCell className="font-mono text-xs">
                         {order.id.slice(0, 8)}…
                       </TableCell>
