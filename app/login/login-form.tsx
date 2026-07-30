@@ -2,11 +2,16 @@
 
 import { z } from "zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { Phone, Loader2, AlertCircle, KeyRound } from "lucide-react";
 
@@ -41,6 +46,7 @@ export function LoginForm() {
   const otpForm = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     mode: "onBlur",
+    defaultValues: { otp: "" },
   });
 
   const onRequestOTP = async (data: PhoneFormData) => {
@@ -187,23 +193,31 @@ export function LoginForm() {
             <Label htmlFor="otp" className="text-sm font-medium">
               Enter OTP
             </Label>
-            <div className="relative">
-              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
-              <Input
-                id="otp"
-                type="text"
-                inputMode="numeric"
-                placeholder="Enter 4-digit OTP"
-                className="pl-10 h-12 text-center text-2xl font-semibold tracking-widest transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                {...otpForm.register("otp")}
-                disabled={isSubmitting}
-                autoComplete="one-time-code"
-                maxLength={4}
-                autoFocus
-              />
-            </div>
+            <Controller
+              name="otp"
+              control={otpForm.control}
+              render={({ field }) => (
+                <InputOTP
+                  id="otp"
+                  maxLength={4}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  disabled={isSubmitting}
+                  autoFocus
+                  containerClassName="justify-center"
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} className="h-12 w-12 text-lg" />
+                    <InputOTPSlot index={1} className="h-12 w-12 text-lg" />
+                    <InputOTPSlot index={2} className="h-12 w-12 text-lg" />
+                    <InputOTPSlot index={3} className="h-12 w-12 text-lg" />
+                  </InputOTPGroup>
+                </InputOTP>
+              )}
+            />
             {otpForm.formState.errors.otp && (
-              <p className="text-sm text-destructive animate-fade-in">
+              <p className="text-sm text-destructive animate-fade-in text-center">
                 {otpForm.formState.errors.otp.message}
               </p>
             )}
