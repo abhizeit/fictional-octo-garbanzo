@@ -1,12 +1,16 @@
 export interface CustomerCounts {
   orders: number;
   addresses: number;
+  favorites: number;
 }
 
 export interface Customer {
   id: string;
   name: string | null;
   phone: string;
+  email: string | null;
+  date_of_birth: string | null;
+  gender: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY" | null;
   code: string;
   role: "CUSTOMER" | "ADMIN";
   is_active: boolean;
@@ -70,9 +74,23 @@ export interface CustomerOrder {
   };
 }
 
+export interface CustomerFavorite {
+  id: string;
+  created_at: string;
+  product: {
+    id: string;
+    name: string;
+    slug: string;
+    image: string | null;
+    code: string;
+    is_available: boolean;
+  };
+}
+
 export interface CustomerDetail extends Customer {
   addresses: CustomerAddress[];
   orders: CustomerOrder[];
+  favorites: CustomerFavorite[];
 }
 
 export interface CustomerListParams {
@@ -95,5 +113,8 @@ export interface CustomerListResponse {
 
 export interface CustomerUpdateInput {
   name?: string;
+  email?: string | null;
+  date_of_birth?: string | null;
+  gender?: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY" | null;
   is_active?: boolean;
 }

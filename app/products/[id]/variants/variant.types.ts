@@ -1,11 +1,11 @@
 import { z } from "zod";
 
+/** Matches Prisma `product_variant` (+ nested attribute values for the admin UI). */
 export type TVariant = {
   id: string;
   name: string;
-  slug?: string;
   price: string | number;
-  sku: string | null;
+  sku: string;
   image: string | null;
   is_default: boolean;
   is_available: boolean;
@@ -35,18 +35,8 @@ export type VariantListParams = {
   product_id?: string;
 };
 
-const variantSlugField = z
-  .string()
-  .min(2, "Slug must be at least 2 characters")
-  .max(100)
-  .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    "Use lowercase letters, numbers, and single hyphens (e.g. 6-pieces)",
-  );
-
 export const ZVariantCreate = z.object({
   name: z.string().min(1, "Name is required"),
-  slug: variantSlugField,
   price: z
     .union([z.string(), z.number()])
     .transform((val) => Number(val))

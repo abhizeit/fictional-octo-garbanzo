@@ -2,7 +2,8 @@
 
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Heart, Loader2, ShoppingBag } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useCustomer } from "@/lib/hooks/use-customers";
 import { CustomerAddressesCard } from "../components/customer-addresses-card";
+import { CustomerPersonalInfoCard } from "../components/customer-personal-info-card";
 import type { NextSearchParamsRecord } from "@/lib/next-search-params";
 import type { OrderStatus } from "../customer.types";
 
@@ -119,6 +121,8 @@ export default function CustomerDetailPage({
     );
   }
 
+  const favorites = customer.favorites ?? [];
+
   return (
     <div className="flex flex-col h-full w-full p-8 space-y-6">
       <div className="flex items-center gap-4">
@@ -145,12 +149,20 @@ export default function CustomerDetailPage({
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Phone</CardDescription>
             <CardTitle className="text-lg font-mono">
               {customer.phone}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Email</CardDescription>
+            <CardTitle className="text-lg truncate">
+              {customer.email || "—"}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -164,13 +176,15 @@ export default function CustomerDetailPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Saved Addresses</CardDescription>
+            <CardDescription>Favorites</CardDescription>
             <CardTitle className="text-lg">
-              {customer._count?.addresses ?? 0}
+              {customer._count?.favorites ?? favorites.length}
             </CardTitle>
           </CardHeader>
         </Card>
       </div>
+
+      <CustomerPersonalInfoCard customer={customer} />
 
       <CustomerAddressesCard
         customerId={customer.id}
@@ -178,6 +192,84 @@ export default function CustomerDetailPage({
         customerPhone={customer.phone}
         addresses={customer.addresses}
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="h-5 w-5" />
+            Favorites
+          </CardTitle>
+          <CardDescription>
+            Products this customer has saved
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {favorites.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              No favorites yet
+            </p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Saved</TableHead>
+                    <TableHead>Availability</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {favorites.map((fav) => (
+                    <TableRow key={fav.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {fav.product.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={fav.product.image}
+                              alt={fav.product.name}
+                              className="h-10 w-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-muted" />
+                          )}
+                          <Link
+                            href={`/products/edit/${fav.product.id}`}
+                            className="font-medium hover:underline"
+                          >
+                            {fav.product.name}
+                          </Link>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {fav.product.code}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatDate(fav.created_at)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          label={
+                            fav.product.is_available
+                              ? "Available"
+                              : "Unavailable"
+                          }
+                          className={
+                            fav.product.is_available
+                              ? ""
+                              : "bg-muted text-muted-foreground border"
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

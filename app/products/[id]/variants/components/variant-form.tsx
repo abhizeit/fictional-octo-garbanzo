@@ -109,7 +109,6 @@ export function VariantForm({
     resolver: zodResolver(ZVariantCreate),
     defaultValues: {
       name: "",
-      slug: "",
       price: 0,
       sku: "",
       image: "",
@@ -138,7 +137,6 @@ export function VariantForm({
       if (initialData) {
         reset({
           name: initialData.name,
-          slug: initialData.slug ?? "",
           price: Number(initialData.price),
           sku: initialData.sku || "",
           image: initialData.image || "",
@@ -161,7 +159,6 @@ export function VariantForm({
       } else {
         reset({
           name: "",
-          slug: "",
           price: 0,
           sku: "",
           image: "",
@@ -224,22 +221,6 @@ export function VariantForm({
               {errors.name && (
                 <p className="text-sm text-destructive">
                   {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="slug">
-                Slug <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="slug"
-                placeholder="e.g. 6-pieces, large-hot"
-                {...register("slug")}
-              />
-              {errors.slug && (
-                <p className="text-sm text-destructive">
-                  {errors.slug.message}
                 </p>
               )}
             </div>

@@ -90,6 +90,14 @@ export function CustomerTable({
       ),
     },
     {
+      id: "Email",
+      accessorFn: (row) => row.email,
+      header: "Email",
+      cell: ({ row }) => (
+        <span className="text-sm">{row.original.email || "—"}</span>
+      ),
+    },
+    {
       id: "Orders",
       accessorFn: (row) => row._count?.orders,
       header: "Orders",
@@ -103,6 +111,14 @@ export function CustomerTable({
       header: "Addresses",
       cell: ({ row }) => (
         <span className="text-sm">{row.original._count?.addresses ?? 0}</span>
+      ),
+    },
+    {
+      id: "Favorites",
+      accessorFn: (row) => row._count?.favorites,
+      header: "Favorites",
+      cell: ({ row }) => (
+        <span className="text-sm">{row.original._count?.favorites ?? 0}</span>
       ),
     },
     {
